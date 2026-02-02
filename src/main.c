@@ -21,11 +21,15 @@
 #define EPSILON 1e-6f
 
 
-
 typedef struct {
     float r; // Real part
     float i; // Imaginary part
 } Complex;
+
+typedef struct Pair{
+    int x;
+    int y;
+} Pair;
 
 // --- Helper Macros/Functions for Complex Math ---
 
@@ -135,20 +139,7 @@ Complex* complex_rref(int rows, int cols, const Complex *matrix) {
     return A;
 }
 
-
-void print_matrix(int rows, int cols, Complex *A) {
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            if(fabsf(A[i*cols+j].r) < EPSILON) A[i*cols+j].r = 0.0f;
-            if(fabsf(A[i*cols+j].i) < EPSILON) A[i*cols+j].i = 0.0f;
-
-            printf("(%.1f, %.1f) ", A[i * cols + j].r, A[i * cols + j].i);
-        }
-        printf("\n");
-    }
-}
-
-Complex* parse_matrix(char matrix[9][9][16], int rows, int columns) {
+Complex* parse_matrix(char*** matrix, int rows, int columns) {
     Complex* parsedMatrix = (Complex*)malloc(sizeof(Complex) * rows * columns);
 
     for (int row = 0; row < rows; row++) {
@@ -220,10 +211,7 @@ Complex* parse_matrix(char matrix[9][9][16], int rows, int columns) {
     return parsedMatrix;
 }
 
-
-
 char*** serialize_matrix(Complex* matrix, int rows, int columns) {
-
     char*** serializedMatrix = (char***)malloc(sizeof(char**) * rows);
     for (int row = 0; row < rows; row++) {
         serializedMatrix[row] = (char**)malloc(sizeof(char*) * columns);
@@ -253,27 +241,11 @@ char*** serialize_matrix(Complex* matrix, int rows, int columns) {
         }
     }
 
-
     return serializedMatrix;
-
 }
 
-struct Pair{
-    int x;
-    int y;
-} typedef Pair;
-
-
-
-void print_rref_ui(int rows, int columns, char*** serializedMatrix, Complex* solvedMatrix, bool inGrid, Pair gridCursor) {
-    Pair gridOffset = {20, 30};
-    char resultBuf[32] = {};
-    const Complex currentResult = solvedMatrix[gridCursor.x * columns + gridCursor.y];
-    const float real = currentResult.r;
-    const float imag = currentResult.i;
-    char buf[32];
-
-    for (int row = 0; row < rows; row++) {
+void print_grid(const int rows, const int columns, char*** serializedMatrix, const Pair gridOffset, const Pair gridCursor, const bool inGrid) {
+     for (int row = 0; row < rows; row++) {
         for (int col = 0; col < columns; col++) {
 
             if (inGrid && gridCursor.x == row && gridCursor.y == col) {
@@ -298,25 +270,37 @@ void print_rref_ui(int rows, int columns, char*** serializedMatrix, Complex* sol
             }
 
 
-            if (!inGrid) {
-                gfx_SetTextTransparentColor(0);
-                gfx_SetTextFGColor(255);
-                gfx_SetTextBGColor(0);
-                gfx_FillRectangle(20, SCREEN_HEIGHT - 40, SCREEN_WIDTH - 30, 30);
-                unsigned int rrefWidth = gfx_GetStringWidth("BACK");
-                gfx_PrintStringXY("BACK", SCREEN_WIDTH/2 - rrefWidth/2, SCREEN_HEIGHT - 30);
-                gfx_SetTextTransparentColor(255);
-                gfx_SetTextFGColor(0);
-                gfx_SetTextBGColor(255);
-            } else {
-                gfx_Rectangle(20, SCREEN_HEIGHT - 40, SCREEN_WIDTH - 30, 30);
-                unsigned int rrefWidth = gfx_GetStringWidth("BACK");
-                gfx_PrintStringXY("BACK", SCREEN_WIDTH/2 - rrefWidth/2, SCREEN_HEIGHT - 30);
-            }
+
 
         }
     }
+}
 
+void print_rref_ui(int rows, int columns, char*** serializedMatrix, Complex* solvedMatrix, bool inGrid, Pair gridCursor) {
+    Pair gridOffset = {20, 30};
+    char resultBuf[32] = {};
+    const Complex currentResult = solvedMatrix[gridCursor.x * columns + gridCursor.y];
+    const float real = currentResult.r;
+    const float imag = currentResult.i;
+    char buf[32];
+
+    print_grid(rows, columns, serializedMatrix, gridOffset, gridCursor, inGrid);
+
+    if (!inGrid) {
+        gfx_SetTextTransparentColor(0);
+        gfx_SetTextFGColor(255);
+        gfx_SetTextBGColor(0);
+        gfx_FillRectangle(20, SCREEN_HEIGHT - 40, SCREEN_WIDTH - 30, 30);
+        unsigned int rrefWidth = gfx_GetStringWidth("BACK");
+        gfx_PrintStringXY("BACK", SCREEN_WIDTH/2 - rrefWidth/2, SCREEN_HEIGHT - 30);
+        gfx_SetTextTransparentColor(255);
+        gfx_SetTextFGColor(0);
+        gfx_SetTextBGColor(255);
+    } else {
+        gfx_Rectangle(20, SCREEN_HEIGHT - 40, SCREEN_WIDTH - 30, 30);
+        unsigned int rrefWidth = gfx_GetStringWidth("BACK");
+        gfx_PrintStringXY("BACK", SCREEN_WIDTH/2 - rrefWidth/2, SCREEN_HEIGHT - 30);
+    }
 
     if (inGrid) {
         if (real != 0) {
@@ -423,8 +407,6 @@ void print_rref_matrix(Complex* matrix, int rows, int columns) {
     free(solvedMatrix);
 }
 
-
-
 void print_ui() {
     enum {
         ROWS,
@@ -432,7 +414,13 @@ void print_ui() {
         NONE
     };
 
-    char matrix [9][9][16];
+    char ***matrix = (char ***)malloc(9 * sizeof(char **));
+    for (int i = 0; i < 9; i++) {
+        matrix[i] = (char **)malloc(9 * sizeof(char *));
+        for (int j = 0; j < 9; j++) {
+            matrix[i][j] = (char *)malloc(32 * sizeof(char));
+        }
+    }
 
 
     for (int i = 0; i < 9; i++) {
@@ -593,36 +581,12 @@ void print_ui() {
 
         gfx_FillScreen(255);
 
-        for (int row = 0; row < grid.x; row++) {
-            for (int col = 0; col < grid.y; col++) {
-                if (inGrid && gridCursor.x == row && gridCursor.y == col) {
-                    gfx_FillRectangle(gridOffset.x + col*(240/grid.y), gridOffset.y + row*(120/grid.x),240/grid.y, 120/grid.x);
-                    gfx_SetTextScale(1, 1);
-                    gfx_SetTextTransparentColor(0);
-                    gfx_SetTextFGColor(255);
-                    gfx_SetTextBGColor(0);
-                    unsigned int textWidth = gfx_GetStringWidth(matrix[row][col]);
-                    gfx_PrintStringXY(matrix[row][col], gridOffset.x + col*(240/grid.y) + (240/grid.y) / 2 - textWidth/2, gridOffset.y + row*(120/grid.x) + (120/grid.x) / 2);
-                    gfx_SetTextTransparentColor(255);
-                    gfx_SetTextFGColor(0);
-                    gfx_SetTextBGColor(255);
-                    gfx_SetTextScale(2, 2);
-                }
-                else {
-                    gfx_Rectangle(gridOffset.x + col*(240/grid.y), gridOffset.y + row*(120/grid.x),240/grid.y, 120/grid.x);
-                    gfx_SetTextScale(1, 1);
-                    unsigned int textWidth = gfx_GetStringWidth(matrix[row][col]);
-                    gfx_PrintStringXY(matrix[row][col], gridOffset.x + col*(240/grid.y) + (240/grid.y) / 2 - textWidth/2, gridOffset.y + row*(120/grid.x) + (120/grid.x) / 2);
-                    gfx_SetTextScale(2, 2);
-                }
-            }
-        }
+        print_grid(grid.x, grid.y, matrix, gridOffset, gridCursor, inGrid);
 
         gfx_PrintStringXY(msg, 20, 20);
         if (!inGrid && !rref) {
             gfx_FillRectangle(startingOffset.x + cursor.x * cursorWidth, startingOffset.y, 15, 5);
         }
-
 
         if (rref) {
             gfx_SetTextTransparentColor(0);
@@ -649,8 +613,16 @@ void print_ui() {
         gfx_BlitBuffer();
         key = os_GetKey();
     }
-}
 
+
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
+            free(matrix[i][j]);
+        }
+        free(matrix[i]);
+    }
+    free(matrix);
+}
 
 int main() {
     gfx_Begin();
