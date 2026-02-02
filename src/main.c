@@ -16,6 +16,9 @@
 #define MAX_COLS 9
 #define CELL_SIZE 32
 
+#define GRID_WIDTH 240
+#define GRID_HEIGHT 120
+
 typedef enum {
     KEY_RIGHT   = 1,
     KEY_LEFT    = 2,
@@ -245,10 +248,10 @@ char ***serialize_matrix(Complex *matrix, int rows, int columns) {
     for (int row = 0; row < rows; row++) {
         serializedMatrix[row] = (char **) malloc(sizeof(char *) * columns);
         for (int col = 0; col < columns; col++) {
-            serializedMatrix[row][col] = (char *) malloc(sizeof(char) * 32);
+            serializedMatrix[row][col] = (char *) malloc(sizeof(char) * CELL_SIZE);
             serializedMatrix[row][col][0] = 0;
 
-            char buf[32];
+            char buf[CELL_SIZE];
             float real = matrix[row * columns + col].r;
             float imag = matrix[row * columns + col].i;
 
@@ -275,21 +278,21 @@ void print_grid(const int rows, const int columns, char ***serializedMatrix, con
     for (int row = 0; row < rows; row++) {
         for (int col = 0; col < columns; col++) {
             if (inGrid && gridCursor.x == row && gridCursor.y == col) {
-                gfx_FillRectangle(gridOffset.x + col * (240 / columns), gridOffset.y + row * (120 / rows),
-                                  240 / columns, 120 / rows);
+                gfx_FillRectangle(gridOffset.x + col * (GRID_WIDTH / columns), gridOffset.y + row * (GRID_HEIGHT / rows),
+                                  GRID_WIDTH / columns, GRID_HEIGHT / rows);
                 gfx_SetTextScale(1, 1);
                 print_inverted_centered_text(serializedMatrix[row][col],
-                                             gridOffset.x + col * (240 / columns) + (240 / columns) / 2,
-                                             gridOffset.y + row * (120 / rows) + (120 / rows) / 2);
+                                             gridOffset.x + col * (GRID_WIDTH / columns) + (GRID_WIDTH / columns) / 2,
+                                             gridOffset.y + row * (GRID_HEIGHT / rows) + (GRID_HEIGHT / rows) / 2);
                 gfx_SetTextScale(2, 2);
             } else {
-                gfx_Rectangle(gridOffset.x + col * (240 / columns), gridOffset.y + row * (120 / rows), 240 / columns,
-                              120 / rows);
+                gfx_Rectangle(gridOffset.x + col * (GRID_WIDTH / columns), gridOffset.y + row * (GRID_HEIGHT / rows), GRID_WIDTH / columns,
+                              GRID_HEIGHT / rows);
                 gfx_SetTextScale(1, 1);
                 unsigned int textWidth = gfx_GetStringWidth(serializedMatrix[row][col]);
                 gfx_PrintStringXY(serializedMatrix[row][col],
-                                  gridOffset.x + col * (240 / columns) + (240 / columns) / 2 - textWidth / 2,
-                                  gridOffset.y + row * (120 / rows) + (120 / rows) / 2);
+                                  gridOffset.x + col * (GRID_WIDTH / columns) + (GRID_WIDTH / columns) / 2 - textWidth / 2,
+                                  gridOffset.y + row * (GRID_HEIGHT / rows) + (GRID_HEIGHT / rows) / 2);
                 gfx_SetTextScale(2, 2);
             }
         }
@@ -299,11 +302,11 @@ void print_grid(const int rows, const int columns, char ***serializedMatrix, con
 void print_rref_ui(int rows, int columns, char ***serializedMatrix, Complex *solvedMatrix, bool inGrid,
                    Pair gridCursor) {
     Pair gridOffset = {20, 30};
-    char resultBuf[32] = {};
+    char resultBuf[CELL_SIZE] = {};
     const Complex currentResult = solvedMatrix[gridCursor.x * columns + gridCursor.y];
     const float real = currentResult.r;
     const float imag = currentResult.i;
-    char buf[32];
+    char buf[CELL_SIZE];
 
     print_grid(rows, columns, serializedMatrix, gridOffset, gridCursor, inGrid);
 
@@ -406,16 +409,16 @@ void print_rref_matrix(Complex *matrix, int rows, int columns) {
 }
 
 void print_ui() {
-    char ***matrix = (char ***) malloc(9 * sizeof(char **));
-    for (int i = 0; i < 9; i++) {
-        matrix[i] = (char **) malloc(9 * sizeof(char *));
-        for (int j = 0; j < 9; j++) {
-            matrix[i][j] = (char *) malloc(32 * sizeof(char));
+    char ***matrix = (char ***) malloc(MAX_ROWS * sizeof(char **));
+    for (int i = 0; i < MAX_ROWS; i++) {
+        matrix[i] = (char **) malloc(MAX_COLS * sizeof(char *));
+        for (int j = 0; j < MAX_COLS; j++) {
+            matrix[i][j] = (char *) malloc(CELL_SIZE * sizeof(char));
         }
     }
 
-    for (int i = 0; i < 9; i++) {
-        for (int j = 0; j < 9; j++) {
+    for (int i = 0; i < MAX_ROWS; i++) {
+        for (int j = 0; j < MAX_COLS; j++) {
             strcpy(matrix[i][j], "0");
         }
     }
@@ -431,7 +434,7 @@ void print_ui() {
 
     Pair startingOffset = {132, 35};
 
-    char msg[32];
+    char msg[CELL_SIZE];
     gfx_SetTextScale(2, 2);
 
     gfx_SetDrawBuffer();
@@ -594,8 +597,8 @@ void print_ui() {
     }
 
 
-    for (int i = 0; i < 9; i++) {
-        for (int j = 0; j < 9; j++) {
+    for (int i = 0; i < MAX_ROWS; i++) {
+        for (int j = 0; j < MAX_COLS; j++) {
             free(matrix[i][j]);
         }
         free(matrix[i]);
