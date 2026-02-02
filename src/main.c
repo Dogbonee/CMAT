@@ -7,23 +7,43 @@
 #include <fileioc.h>
 #include <graphx.h>
 
-#define KEY_MODE  69
-#define KEY_LEFT 2
-#define KEY_RIGHT 1
-#define KEY_UP 3
-#define KEY_DOWN 4
-#define KEY_ENTER 5
-#define KEY_CLEAR 9
-
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
 
 #define EPSILON 1e-6f
 
+#define MAX_ROWS 9
+#define MAX_COLS 9
+#define CELL_SIZE 32
+
+typedef enum {
+    KEY_RIGHT   = 1,
+    KEY_LEFT    = 2,
+    KEY_UP      = 3,
+    KEY_DOWN    = 4,
+    KEY_ENTER   = 5,
+    KEY_CLEAR   = 9,
+    KEY_MODE    = 69,
+    KEY_ADD     = 128,
+    KEY_SUB     = 129,
+    KEY_NEG     = 140,
+    KEY_DOT     = 141,
+    KEY_IMAG_I  = 238,
+    KEY_0       = 142,
+    KEY_1       = 143,
+    KEY_2       = 144,
+    KEY_3       = 145,
+    KEY_4       = 146,
+    KEY_5       = 147,
+    KEY_6       = 148,
+    KEY_7       = 149,
+    KEY_8       = 150,
+    KEY_9       = 151
+} KeyCode;
 
 typedef struct {
-    float r; // Real part
-    float i; // Imaginary part
+    float r;
+    float i;
 } Complex;
 
 typedef struct Pair {
@@ -71,7 +91,6 @@ Complex *complex_rref(int rows, int cols, const Complex *matrix) {
 
     Complex *A = (Complex *) malloc(sizeof(Complex) * rows * cols);
 
-    // Copy the matrix
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
             A[i * cols + j] = matrix[i * cols + j];
@@ -387,12 +406,6 @@ void print_rref_matrix(Complex *matrix, int rows, int columns) {
 }
 
 void print_ui() {
-    enum {
-        ROWS,
-        COLS,
-        NONE
-    };
-
     char ***matrix = (char ***) malloc(9 * sizeof(char **));
     for (int i = 0; i < 9; i++) {
         matrix[i] = (char **) malloc(9 * sizeof(char *));
@@ -432,8 +445,8 @@ void print_ui() {
     while (key != KEY_MODE) {
         Pair gridOffset = {20, 60};
 
-        if (key >= 142 && key < 152) {
-            const int num = key - 142;
+        if (key >= KEY_0 && key <= KEY_9) {
+            const int num = key - KEY_0;
             if (!inGrid && !rref && num != 0) {
                 if (cursor.x == 0) {
                     grid.x = num;
@@ -450,22 +463,22 @@ void print_ui() {
             sprintf(msg, "MATRIX   %dx%d", grid.x, grid.y);
         }
 
-        if (key == 140 || key == 129) {
+        if (key == KEY_NEG || key == KEY_SUB) {
             matrix[gridCursor.x][gridCursor.y][inputPtr] = '-';
             matrix[gridCursor.x][gridCursor.y][inputPtr + 1] = 0;
             inputPtr++;
         }
-        if (key == 128) {
+        if (key == KEY_ADD) {
             matrix[gridCursor.x][gridCursor.y][inputPtr] = '+';
             matrix[gridCursor.x][gridCursor.y][inputPtr + 1] = 0;
             inputPtr++;
         }
-        if (key == 141) {
+        if (key == KEY_DOT) {
             matrix[gridCursor.x][gridCursor.y][inputPtr] = '.';
             matrix[gridCursor.x][gridCursor.y][inputPtr + 1] = 0;
             inputPtr++;
         }
-        if (key == 238) {
+        if (key == KEY_IMAG_I) {
             matrix[gridCursor.x][gridCursor.y][inputPtr] = 'i';
             matrix[gridCursor.x][gridCursor.y][inputPtr + 1] = 0;
             inputPtr++;
@@ -474,7 +487,6 @@ void print_ui() {
         if (key == KEY_ENTER) {
             if (rref) {
                 Complex *parsedMatrix = parse_matrix(matrix, grid.x, grid.y);
-                // Note: print_rref_matrix takes ownership of parsedMatrix and frees it.
                 print_rref_matrix(parsedMatrix, grid.x, grid.y);
             } else if (!inGrid) {
                 if (cursor.x == 0) {
