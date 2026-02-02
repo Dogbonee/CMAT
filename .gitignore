@@ -7,3 +7,4 @@ src/gfx/*.8xv
 convimg.yaml.lst
 /cmake-build-debug
 /.idea
+*.txt
