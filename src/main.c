@@ -153,6 +153,17 @@ Complex *complex_rref(int rows, int cols, const Complex *matrix) {
     return A;
 }
 
+int get_input_ptr(const char* str)
+{
+    int i;
+    for (i = 0; str[i] != 0; i++);
+    if (i == 1 && str[0] == '0')
+    {
+        return 0;
+    }
+    return i;
+}
+
 Complex *parse_matrix(char ***matrix, int rows, int columns) {
     Complex *parsedMatrix = (Complex *) malloc(sizeof(Complex) * rows * columns);
 
@@ -312,11 +323,11 @@ void print_rref_ui(int rows, int columns, char ***serializedMatrix, Complex *sol
 
     if (!inGrid) {
         gfx_FillRectangle(20, SCREEN_HEIGHT - 40, SCREEN_WIDTH - 30, 30);
-        print_inverted_centered_text("BACK", SCREEN_WIDTH / 2, SCREEN_HEIGHT - 30);
+        print_inverted_centered_text("BACK", SCREEN_WIDTH / 2, SCREEN_HEIGHT - 32);
     } else {
         gfx_Rectangle(20, SCREEN_HEIGHT - 40, SCREEN_WIDTH - 30, 30);
         unsigned int rrefWidth = gfx_GetStringWidth("BACK");
-        gfx_PrintStringXY("BACK", SCREEN_WIDTH / 2 - rrefWidth / 2, SCREEN_HEIGHT - 30);
+        gfx_PrintStringXY("BACK", SCREEN_WIDTH / 2 - rrefWidth / 2, SCREEN_HEIGHT - 32);
     }
 
     if (inGrid) {
@@ -519,7 +530,7 @@ void print_ui() {
                     gridCursor.y = grid.y - 1;
                     gridCursor.x--;
                 }
-                inputPtr = 0;
+                inputPtr = get_input_ptr(matrix[gridCursor.x][gridCursor.y]);
             }
         } else if (key == KEY_RIGHT) {
             if (!inGrid && !rref && cursor.x == 0) {
@@ -532,7 +543,7 @@ void print_ui() {
                     gridCursor.y = 0;
                     gridCursor.x++;
                 }
-                inputPtr = 0;
+                inputPtr = get_input_ptr(matrix[gridCursor.x][gridCursor.y]);
             } else {
                 inGrid = 0;
                 rref = 1;
@@ -545,7 +556,7 @@ void print_ui() {
                 if (gridCursor.x >= grid.x) {
                     gridCursor.x--;
                 }
-                inputPtr = 0;
+                inputPtr = get_input_ptr(matrix[gridCursor.x][gridCursor.y]);
             } else {
                 inGrid = 0;
                 rref = 1;
@@ -557,7 +568,7 @@ void print_ui() {
                     gridCursor.x = 0;
                     inGrid = 0;
                 }
-                inputPtr = 0;
+                inputPtr = get_input_ptr(matrix[gridCursor.x][gridCursor.y]);
             } else if (rref) {
                 rref = 0;
                 inGrid = 1;
@@ -565,6 +576,7 @@ void print_ui() {
         } else if (key == KEY_CLEAR) {
             if (inGrid) {
                 strcpy(matrix[gridCursor.x][gridCursor.y], "0");
+                inputPtr = 0;
             }
         }
 
@@ -579,11 +591,11 @@ void print_ui() {
 
         if (rref) {
             gfx_FillRectangle(20, SCREEN_HEIGHT - 40, SCREEN_WIDTH - 30, 30);
-            print_inverted_centered_text("RREF", SCREEN_WIDTH / 2, SCREEN_HEIGHT - 30);
+            print_inverted_centered_text("RREF", SCREEN_WIDTH / 2, SCREEN_HEIGHT - 32);
         } else {
             gfx_Rectangle(20, SCREEN_HEIGHT - 40, SCREEN_WIDTH - 30, 30);
             unsigned int rrefWidth = gfx_GetStringWidth("RREF");
-            gfx_PrintStringXY("RREF", SCREEN_WIDTH / 2 - rrefWidth / 2, SCREEN_HEIGHT - 30);
+            gfx_PrintStringXY("RREF", SCREEN_WIDTH / 2 - rrefWidth / 2, SCREEN_HEIGHT - 32);
         }
 
 #ifdef DEBUG
