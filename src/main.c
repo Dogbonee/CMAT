@@ -476,26 +476,28 @@ void print_ui() {
             }
             sprintf(msg, "MATRIX   %dx%d", grid.x, grid.y);
         }
-
-        if (key == KEY_NEG || key == KEY_SUB) {
-            matrix[gridCursor.x][gridCursor.y][inputPtr] = '-';
-            matrix[gridCursor.x][gridCursor.y][inputPtr + 1] = 0;
-            inputPtr++;
-        }
-        if (key == KEY_ADD) {
-            matrix[gridCursor.x][gridCursor.y][inputPtr] = '+';
-            matrix[gridCursor.x][gridCursor.y][inputPtr + 1] = 0;
-            inputPtr++;
-        }
-        if (key == KEY_DOT) {
-            matrix[gridCursor.x][gridCursor.y][inputPtr] = '.';
-            matrix[gridCursor.x][gridCursor.y][inputPtr + 1] = 0;
-            inputPtr++;
-        }
-        if (key == KEY_IMAG_I) {
-            matrix[gridCursor.x][gridCursor.y][inputPtr] = 'i';
-            matrix[gridCursor.x][gridCursor.y][inputPtr + 1] = 0;
-            inputPtr++;
+        if (inGrid)
+        {
+            if (key == KEY_NEG || key == KEY_SUB) {
+                matrix[gridCursor.x][gridCursor.y][inputPtr] = '-';
+                matrix[gridCursor.x][gridCursor.y][inputPtr + 1] = 0;
+                inputPtr++;
+            }
+            if (key == KEY_ADD) {
+                matrix[gridCursor.x][gridCursor.y][inputPtr] = '+';
+                matrix[gridCursor.x][gridCursor.y][inputPtr + 1] = 0;
+                inputPtr++;
+            }
+            if (key == KEY_DOT) {
+                matrix[gridCursor.x][gridCursor.y][inputPtr] = '.';
+                matrix[gridCursor.x][gridCursor.y][inputPtr + 1] = 0;
+                inputPtr++;
+            }
+            if (key == KEY_IMAG_I) {
+                matrix[gridCursor.x][gridCursor.y][inputPtr] = 'i';
+                matrix[gridCursor.x][gridCursor.y][inputPtr + 1] = 0;
+                inputPtr++;
+            }
         }
 
         if (key == KEY_ENTER) {
