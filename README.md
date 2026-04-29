@@ -1,5 +1,5 @@
 # CMAT
-A simple tool for performing RREF on imaginary matrices on the TI84 Plus CE. 
+A simple tool for performing RREF on imaginary matrices on the TI84 Plus CE. The results in the last column are stored into system variables for easy processing after the program is exited (the first row, last column stored into A, second row, last column stored into B, and so on). 
 
 # How to Install
 Simply drag and drop `CMAT.8xp` onto your calculator in TI Connect. On newer calculators you may need to use
